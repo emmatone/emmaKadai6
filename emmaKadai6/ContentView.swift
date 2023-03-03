@@ -33,8 +33,6 @@ struct KadaiHeaderView: View {
 
 //アラート
 struct AlertInfo {
-    let alertTitle: String = "結果"
-    let buttonLabel: String = "再挑戦"
     var isPressed: Bool = false
     var message: String = ""
 }
@@ -47,7 +45,7 @@ class Model: ObservableObject {
     let minValue: Int = 1
     let maxValue: Int = 100
 
-    func setQuestionValue() {
+    private func setQuestionValue() {
         questionValue = Int.random(in: minValue...maxValue)
     }
 
@@ -58,6 +56,14 @@ class Model: ObservableObject {
             alertInfo.message = "はずれ!\nあなたの値: \(Int(defaultValue))"
         }
         alertInfo.isPressed = true
+    }
+
+    func didTabAlertRetryButton() {
+        setQuestionValue()
+    }
+
+    func onAppear() {
+        setQuestionValue()
     }
 }
 
@@ -78,14 +84,13 @@ struct ContentView: View {
 
             //問題の値
             Text("\(model.questionValue)")
-                .onAppear(perform: { model.setQuestionValue() })
                 .font(.largeTitle)
                 .padding(0)
 
-//            //スライダーの値
-//            Text("\(Int(model.defaultValue))")
-//                .font(.title)
-//                .foregroundColor(kadaiHeaderView.kadaiColor)
+            //            //スライダーの値
+            //            Text("\(Int(model.defaultValue))")
+            //                .font(.title)
+            //                .foregroundColor(kadaiHeaderView.kadaiColor)
 
             //スライダー
             Slider(
@@ -114,19 +119,20 @@ struct ContentView: View {
                     .background(kadaiHeaderView.kadaiColor)
                     .cornerRadius(30)
             }
-            .alert(
-                model.alertInfo.alertTitle,
-                isPresented: $model.alertInfo.isPressed,
-                presenting: model.alertInfo.message,
-                actions: { _ in
-                    Button( model.alertInfo.buttonLabel, action: { model.setQuestionValue() })
-                },
-                message: { message in
-                    Text(message)
-                }
+            .alert("結果",
+                   isPresented: $model.alertInfo.isPressed,
+                   presenting: model.alertInfo.message,
+                   actions: { _ in
+                Button("再調整",
+                       action: { model.didTabAlertRetryButton() })
+            },
+                   message: { message in
+                Text(message)
+            }
             )
             Spacer()
         }
+        .onAppear(perform: { model.onAppear() })
     }
 }
 
